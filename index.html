@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>두 자릿수 × 한 자릿수 세로셈 수학 놀이터</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 구글 웹 폰트 (동글 & 가람체 느낌의 감성 둥근 글꼴 Jua & Gaegu) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #FFF5F5;
+      --text-color: #7B6B8D;
+      --accent-pink: #FFB5C2;
+      --accent-blue: #B5D8F7;
+      --card-bg: #FFFFFF;
+      --soft-shadow: 0 10px 25px -5px rgba(255, 181, 194, 0.25), 0 8px 10px -6px rgba(181, 216, 247, 0.2);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Jua', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .handwriting {
+      font-family: 'Gaegu', cursive;
+    }
+
+    /* 포근한 구름형 그라데이션 및 부드러운 박스 그림자 */
+    .fluffy-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      box-shadow: var(--soft-shadow);
+      border: 3px solid #FFF0F3;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .fluffy-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 30px -4px rgba(255, 181, 194, 0.35);
+      border-color: #FFDEE5;
+    }
+
+    /* 부드러운 라운드 입력칸 */
+    .digit-box {
+      width: 2.2rem;
+      height: 2.5rem;
+      text-align: center;
+      font-size: 1.35rem;
+      font-family: 'Jua', sans-serif;
+      color: #5D4E70;
+      background-color: #FFF9FA;
+      border: 2px dashed #FFCCD5;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .digit-box:focus {
+      border: 2.5px solid #FF94A8;
+      background-color: #FFFFFF;
+      box-shadow: 0 0 0 4px rgba(255, 181, 194, 0.3);
+      transform: scale(1.05);
+    }
+
+    .digit-box.correct {
+      border: 2px solid #7AD09D !important;
+      background-color: #EDFDF5 !important;
+      color: #2F855A !important;
+    }
+
+    .digit-box.wrong {
+      border: 2px solid #FF8FA3 !important;
+      background-color: #FFF0F3 !important;
+      color: #E53E3E !important;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+
+    /* 몽실몽실 탭 버튼 */
+    .page-tab {
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-size: 1.1rem;
+      font-weight: normal;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .page-tab.active {
+      background: linear-gradient(135deg, #FFB5C2, #FFA4B5);
+      color: white;
+      box-shadow: 0 6px 15px rgba(255, 181, 194, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .page-tab:not(.active) {
+      background: white;
+      color: #9284A4;
+      border: 2px solid #FFE4E8;
+    }
+
+    .page-tab:not(.active):hover {
+      background: #FFF5F7;
+      color: #7B6B8D;
+    }
+
+    /* 배경 데코레이션 요소 (떠다니는 느낌) */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(3deg); }
+    }
+
+    .floating {
+      animation: floatSlow 5s ease-in-out infinite;
+    }
+
+    .floating-delay {
+      animation: floatSlow 6s ease-in-out 1.5s infinite;
+    }
+
+    /* 인쇄(Print) 전용 최적화 스타일 */
+    @media print {
+      body {
+        background-color: white !important;
+        color: black !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-page {
+        page-break-after: always;
+        break-after: page;
+        padding: 20mm 15mm !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        height: auto !important;
+        background: white !important;
+      }
+      .digit-box {
+        border: 1.5px solid #A0AEC0 !important;
+        background: transparent !important;
+      }
+      .fluffy-card {
+        box-shadow: none !important;
+        border: 1.5px solid #E2E8F0 !important;
+      }
+      .print-all-pages {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen py-8 px-4 flex flex-col items-center select-none relative overflow-x-hidden">
+
+  <!-- 몽글몽글 동화 배경 장식 요소들 (SVG) -->
+  <div class="fixed top-8 left-10 pointer-events-none opacity-60 floating no-print">
+    <svg width="120" height="70" viewBox="0 0 120 70" fill="none">
+      <path d="M25 50C15 50 8 42 8 32C8 23 15 16 24 16C26 8 34 2 44 2C56 2 66 11 67 22C72 17 80 15 87 18C95 21 100 29 98 37C105 38 110 44 110 50C110 58 103 65 95 65L25 65C15 65 8 58 8 50" fill="#FFE5EC"/>
+      <!-- 귀여운 뺨 -->
+      <circle cx="45" cy="40" r="4" fill="#FFB5C2"/>
+      <circle cx="75" cy="40" r="4" fill="#FFB5C2"/>
+      <path d="M56 38Q60 42 64 38" stroke="#7B6B8D" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="fixed top-20 right-12 pointer-events-none opacity-60 floating-delay no-print">
+    <svg width="110" height="110" viewBox="0 0 100 100" fill="none">
+      <!-- 몽실몽실 아기 토끼와 별풍선 -->
+      <path d="M50 35C40 35 32 43 32 54C32 66 41 74 50 74C59 74 68 66 68 54C68 43 60 35 50 35Z" fill="#FFF"/>
+      <!-- 귀 -->
+      <ellipse cx="42" cy="22" rx="6" ry="16" fill="#FFF" transform="rotate(-10 42 22)"/>
+      <ellipse cx="42" cy="22" rx="3" ry="10" fill="#FFD1DC" transform="rotate(-10 42 22)"/>
+      <ellipse cx="58" cy="22" rx="6" ry="16" fill="#FFF" transform="rotate(10 58 22)"/>
+      <ellipse cx="58" cy="22" rx="3" ry="10" fill="#FFD1DC" transform="rotate(10 58 22)"/>
+      <!-- 눈, 코, 볼 -->
+      <circle cx="44" cy="50" r="2.5" fill="#7B6B8D"/>
+      <circle cx="56" cy="50" r="2.5" fill="#7B6B8D"/>
+      <ellipse cx="50" cy="55" rx="3" ry="2" fill="#FF94A8"/>
+      <circle cx="38" cy="56" r="3.5" fill="#FFB5C2" opacity="0.6"/>
+      <circle cx="62" cy="56" r="3.5" fill="#FFB5C2" opacity="0.6"/>
+      <!-- 파스텔 노란 별 -->
+      <polygon points="78,15 81,22 88,23 83,28 85,35 78,31 72,35 74,28 69,23 76,22" fill="#FFEAA7"/>
+    </svg>
+  </div>
+
+  <div class="fixed bottom-10 left-12 pointer-events-none opacity-50 floating no-print">
+    <!-- 아기 곰 인형과 하늘색 구름 -->
+    <svg width="100" height="90" viewBox="0 0 100 90" fill="none">
+      <ellipse cx="50" cy="55" rx="25" ry="22" fill="#F8E5D6"/>
+      <!-- 귀 -->
+      <circle cx="32" cy="38" r="9" fill="#F8E5D6"/>
+      <circle cx="32" cy="38" r="5" fill="#FFCAD4"/>
+      <circle cx="68" cy="38" r="9" fill="#F8E5D6"/>
+      <circle cx="68" cy="38" r="5" fill="#FFCAD4"/>
+      <!-- 얼굴 -->
+      <circle cx="43" cy="52" r="2.5" fill="#6B5545"/>
+      <circle cx="57" cy="52" r="2.5" fill="#6B5545"/>
+      <ellipse cx="50" cy="60" rx="4" ry="3" fill="#FFEFE8"/>
+      <circle cx="50" cy="59" r="2" fill="#6B5545"/>
+      <circle cx="38" cy="60" r="4" fill="#FFB5C2" opacity="0.5"/>
+      <circle cx="62" cy="60" r="4" fill="#FFB5C2" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <div class="fixed bottom-12 right-10 pointer-events-none opacity-50 floating-delay no-print">
+    <!-- 파스텔 풍선들 -->
+    <svg width="100" height="120" viewBox="0 0 100 120" fill="none">
+      <ellipse cx="40" cy="40" rx="20" ry="24" fill="#B5D8F7"/>
+      <ellipse cx="65" cy="48" rx="18" ry="22" fill="#FFD1DC"/>
+      <path d="M40 64Q35 85 45 105" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <path d="M65 70Q70 90 55 105" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3,3"/>
+    </svg>
+  </div>
+
+  <!-- 상단 헤더 컨테이너 -->
+  <header class="w-full max-w-4xl text-center mb-6 z-10">
+    <div class="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-white/80 border border-[#FFD6DF] shadow-sm mb-3">
+      <span class="text-xl">🐰</span>
+      <span class="text-sm md:text-base font-bold text-[#FF8DA3]">초등 2학년 2학기 · 곱셈구구 연계</span>
+      <span class="text-xl">⭐</span>
+    </div>
+    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-2 text-[#6D5982] drop-shadow-sm flex items-center justify-center gap-3">
+      <span>☁️</span> 두 자릿수 × 한 자릿수 세로셈 <span>🎈</span>
+    </h1>
+    <p class="text-base md:text-lg text-[#9583A6] handwriting">
+      일의 자리 먼저 곱하고, 십의 자리를 곱해서 더해보아요! 포근포근 수학 시간 ✨
+    </p>
+
+    <!-- 사용자 정보 기입란 (이름/날짜) -->
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-4 text-base">
+      <div class="bg-white/90 px-4 py-1.5 rounded-2xl border border-[#FFE1E7] flex items-center gap-2 shadow-sm">
+        <span class="text-[#FF8DA3]">📅 날짜 :</span>
+        <input type="text" id="studentDate" class="outline-none bg-transparent w-28 text-center text-[#7B6B8D] font-bold" placeholder="월    일">
+      </div>
+      <div class="bg-white/90 px-4 py-1.5 rounded-2xl border border-[#FFE1E7] flex items-center gap-2 shadow-sm">
+        <span class="text-[#8FBFE8]">🌱 이름 :</span>
+        <input type="text" id="studentName" class="outline-none bg-transparent w-28 text-center text-[#7B6B8D] font-bold" placeholder="2학년   반   번">
+      </div>
+      <div class="bg-white/90 px-4 py-1.5 rounded-2xl border border-[#FFE1E7] flex items-center gap-2 shadow-sm">
+        <span class="text-[#FFAE74]">⭐ 점수 :</span>
+        <span id="pageScoreDisplay" class="font-bold text-[#FF6584] min-w-12 text-center">- / 90점</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 컨트롤 바: 페이지 이동 탭 및 액션 버튼 -->
+  <nav class="w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-6 z-10 no-print">
+    <!-- 페이지 번호 탭 -->
+    <div class="flex items-center gap-2 bg-white/70 p-1.5 rounded-3xl border border-[#FFE6EB] shadow-sm">
+      <button onclick="switchPage(1)" id="tab-1" class="page-tab active">1쪽 🌸</button>
+      <button onclick="switchPage(2)" id="tab-2" class="page-tab">2쪽 🍓</button>
+      <button onclick="switchPage(3)" id="tab-3" class="page-tab">3쪽 🍯</button>
+      <button onclick="switchPage(4)" id="tab-4" class="page-tab">4쪽 🍬</button>
+      <button onclick="switchPage(5)" id="tab-5" class="page-tab">5쪽 🌈</button>
+    </div>
+
+    <!-- 기능 버튼들 (채점하기, 다시풀기, 답지확인, 인쇄) -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="checkAnswers()" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-[#FFB5C2] to-[#FF9EAF] hover:from-[#FFA3B3] hover:to-[#FF8FA3] text-white shadow-md active:scale-95 transition flex items-center gap-1.5 text-base">
+        <span>✏️</span> 자동 채점하기
+      </button>
+      <button onclick="resetCurrentPage()" class="px-3.5 py-2 rounded-2xl bg-white hover:bg-[#FFF2F5] text-[#9382A5] border border-[#FFDCE3] shadow-sm active:scale-95 transition flex items-center gap-1 text-base">
+        <span>🔄</span> 지우기
+      </button>
+      <button onclick="toggleAnswerModal(true)" class="px-3.5 py-2 rounded-2xl bg-[#EBF5FF] hover:bg-[#DCEEFE] text-[#5584B7] border border-[#B5D8F7] shadow-sm active:scale-95 transition flex items-center gap-1 text-base">
+        <span>📖</span> 전체 답지 보기
+      </button>
+      <button onclick="printCurrentPage()" class="px-3.5 py-2 rounded-2xl bg-white hover:bg-gray-50 text-[#7B6B8D] border border-gray-200 shadow-sm active:scale-95 transition flex items-center gap-1 text-base">
+        <span>🖨️</span> 인쇄하기
+      </button>
+    </div>
+  </nav>
+
+  <!-- 메인 학습지 문제 그리드 영역 (한 페이지에 9문제, 3x3 배치) -->
+  <main class="w-full max-w-4xl bg-white/60 p-6 md:p-8 rounded-[36px] border-2 border-[#FFE8ED] shadow-xl relative z-10 print-page">
+    
+    <!-- 인쇄 전용 헤더 -->
+    <div class="hidden print:flex items-center justify-between border-b-2 border-dashed border-[#FFB5C2] pb-4 mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-[#7B6B8D]">두 자릿수 × 한 자릿수 세로셈 연습장 (<span id="printPageLabel">1</span>쪽)</h2>
+        <p class="text-sm text-gray-500">일의 자리 곱하기, 십의 자리 곱하기를 차례대로 써서 답을 구해봐요.</p>
+      </div>
+      <div class="text-right text-base text-gray-700">
+        <p>날짜: 202   년     월     일</p>
+        <p>이름: 2학년      반      번</p>
+      </div>
+    </div>
+
+    <!-- 9문제 카드 그리드 (3행 3열) -->
+    <div id="problemsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <!-- JavaScript로 동적 렌더링 됩니다 -->
+    </div>
+
+    <!-- 페이지 하단 따뜻한 칭찬 메시지 / 팁 박스 -->
+    <footer class="mt-8 pt-4 border-t border-dashed border-[#FFD9E2] flex items-center justify-between text-sm md:text-base text-[#9B8CAE]">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">💡</span>
+        <span><strong>세로셈 비법 :</strong> 일의 자리 곱한 값과 십의 자리 곱한 값의 자릿수를 잘 맞추어 써보세요!</span>
+      </div>
+      <div class="font-bold text-[#FF8DA3] handwriting text-lg">
+        너는 할 수 있어, 참 잘했어요! 🐰❤️
+      </div>
+    </footer>
+  </main>
+
+  <!-- 전체 답지 모달 (팝업창) -->
+  <div id="answerModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white w-full max-w-3xl max-h-[88vh] rounded-[32px] p-6 md:p-8 shadow-2xl border-4 border-[#FFE3EA] flex flex-col overflow-hidden relative">
+      <!-- 닫기 버튼 -->
+      <button onclick="toggleAnswerModal(false)" class="absolute top-5 right-6 text-2xl text-[#AA9BB9] hover:text-[#7B6B8D] p-2 rounded-full hover:bg-gray-100 transition">
+        ✕
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-3xl">🎀</span>
+        <div>
+          <h3 class="text-2xl font-bold text-[#6D5982]">포근한 세로셈 전체 정답과 풀이</h3>
+          <p class="text-sm text-[#9F90B1]">각 단계별 계산 과정과 최종 곱을 한눈에 확인하세요.</p>
+        </div>
+      </div>
+
+      <!-- 답지 탭 선택 -->
+      <div class="flex gap-2 overflow-x-auto pb-2 border-b border-pink-100 mb-4">
+        <button onclick="renderAnswerTab(1)" id="ans-tab-1" class="px-4 py-1.5 rounded-xl text-sm font-bold bg-[#FFB5C2] text-white">1쪽 답지</button>
+        <button onclick="renderAnswerTab(2)" id="ans-tab-2" class="px-4 py-1.5 rounded-xl text-sm font-bold bg-gray-100 text-[#7B6B8D]">2쪽 답지</button>
+        <button onclick="renderAnswerTab(3)" id="ans-tab-3" class="px-4 py-1.5 rounded-xl text-sm font-bold bg-gray-100 text-[#7B6B8D]">3쪽 답지</button>
+        <button onclick="renderAnswerTab(4)" id="ans-tab-4" class="px-4 py-1.5 rounded-xl text-sm font-bold bg-gray-100 text-[#7B6B8D]">4쪽 답지</button>
+        <button onclick="renderAnswerTab(5)" id="ans-tab-5" class="px-4 py-1.5 rounded-xl text-sm font-bold bg-gray-100 text-[#7B6B8D]">5쪽 답지</button>
+      </div>
+
+      <!-- 정답 목록 스크롤 컨텐츠 -->
+      <div id="answerContentArea" class="flex-1 overflow-y-auto pr-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <!-- 동적 렌더링 -->
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-pink-100 flex justify-end gap-3">
+        <button onclick="printAnswers()" class="px-4 py-2 rounded-2xl bg-[#E8F3FD] text-[#477DB7] font-bold hover:bg-[#D5EAFB] transition flex items-center gap-1.5">
+          <span>🖨️</span> 이 답지 인쇄하기
+        </button>
+        <button onclick="toggleAnswerModal(false)" class="px-5 py-2 rounded-2xl bg-[#FFB5C2] text-white font-bold hover:bg-[#FFA5B5] transition">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 정답 인쇄용 숨겨진 영역 -->
+  <div id="printAnswerContainer" class="hidden"></div>
+
+  <!-- 오디오 합성 사운드 효과 (Web Audio API) -->
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'success') {
+        // 도-미-솔-도 밝은 차임벨
+        const now = audioCtx.currentTime;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+        osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } else if (type === 'pop') {
+        const now = audioCtx.currentTime;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else {
+        // 부드러운 알림음
+        const now = audioCtx.currentTime;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.setValueAtTime(280, now + 0.1);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+  </script>
+
+  <!-- 5페이지 x 9문제 = 45문제 데이터셋 및 앱 핵심 로직 -->
+  <script>
+    // 5페이지 분량의 체계적인 문제 데이터 (초등 2학년 맞춤형: 십의 자리 1~4 및 일의 자리 다양한 조합)
+    // 각 문제는 { id, num1, num2, onesProduct, tensProduct, total }
+    // 예: 19 x 3 -> onesProduct = 27 (9x3), tensProduct = 30 (10x3), total = 57
+    const pagesData = {
+      1: [
+        { id: "1-1", num1: 19, num2: 3 }, // 예시 문항
+        { id: "1-2", num1: 14, num2: 4 },
+        { id: "1-3", num1: 16, num2: 2 },
+        { id: "1-4", num1: 23, num2: 3 },
+        { id: "1-5", num1: 25, num2: 2 },
+        { id: "1-6", num1: 18, num2: 3 },
+        { id: "1-7", num1: 12, num2: 5 },
+        { id: "1-8", num1: 24, num2: 4 },
+        { id: "1-9", num1: 17, num2: 3 }
+      ],
+      2: [
+        { id: "2-1", num1: 15, num2: 4 },
+        { id: "2-2", num1: 26, num2: 2 },
+        { id: "2-3", num1: 13, num2: 6 },
+        { id: "2-4", num1: 32, num2: 3 },
+        { id: "2-5", num1: 27, num2: 3 },
+        { id: "2-6", num1: 16, num2: 4 },
+        { id: "2-7", num1: 34, num2: 2 },
+        { id: "2-8", num1: 19, num2: 4 },
+        { id: "2-9", num1: 28, num2: 3 }
+      ],
+      3: [
+        { id: "3-1", num1: 23, num2: 4 },
+        { id: "3-2", num1: 18, num2: 5 },
+        { id: "3-3", num1: 35, num2: 2 },
+        { id: "3-4", num1: 42, num2: 3 },
+        { id: "3-5", num1: 29, num2: 2 },
+        { id: "3-6", num1: 17, num2: 4 },
+        { id: "3-7", num1: 36, num2: 2 },
+        { id: "3-8", num1: 25, num2: 3 },
+        { id: "3-9", num1: 14, num2: 6 }
+      ],
+      4: [
+        { id: "4-1", num1: 38, num2: 2 },
+        { id: "4-2", num1: 26, num2: 3 },
+        { id: "4-3", num1: 45, num2: 2 },
+        { id: "4-4", num1: 19, num2: 5 },
+        { id: "4-5", num1: 33, num2: 3 },
+        { id: "4-6", num1: 27, num2: 4 },
+        { id: "4-7", num1: 15, num2: 6 },
+        { id: "4-8", num1: 43, num2: 2 },
+        { id: "4-9", num1: 28, num2: 4 }
+      ],
+      5: [
+        { id: "5-1", num1: 34, num2: 3 },
+        { id: "5-2", num1: 24, num2: 5 },
+        { id: "5-3", num1: 48, num2: 2 },
+        { id: "5-4", num1: 16, num2: 6 },
+        { id: "5-5", num1: 39, num2: 2 },
+        { id: "5-6", num1: 29, num2: 3 },
+        { id: "5-7", num1: 44, num2: 2 },
+        { id: "5-8", num1: 18, num2: 4 },
+        { id: "5-9", num1: 35, num2: 3 }
+      ]
+    };
+
+    // 각 문제 데이터 계산 보강
+    Object.keys(pagesData).forEach(p => {
+      pagesData[p] = pagesData[p].map((q, idx) => {
+        const tensDigit = Math.floor(q.num1 / 10);
+        const onesDigit = q.num1 % 10;
+        const onesProduct = onesDigit * q.num2;
+        const tensProduct = (tensDigit * 10) * q.num2;
+        const total = q.num1 * q.num2;
+        return {
+          ...q,
+          index: idx + 1,
+          tensDigit,
+          onesDigit,
+          onesProduct,
+          tensProduct,
+          total
+        };
+      });
+    });
+
+    let currentPage = 1;
+    // 학생 입력 상태 저장 객체: { [probId]: { ones: '', tens: '', total: '' } }
+    const userInputs = {};
+
+    // 문제 렌더링 함수
+    function renderPage(pageNum) {
+      currentPage = pageNum;
+      const grid = document.getElementById("problemsGrid");
+      grid.innerHTML = "";
+      document.getElementById("printPageLabel").textContent = pageNum;
+
+      // 탭 스타일 갱신
+      for (let i = 1; i <= 5; i++) {
+        const tab = document.getElementById(`tab-${i}`);
+        if (i === pageNum) {
+          tab.classList.add("active");
+        } else {
+          tab.classList.remove("active");
+        }
+      }
+
+      const questions = pagesData[pageNum];
+
+      questions.forEach((q) => {
+        const probState = userInputs[q.id] || { ones: '', tens: '', total: '' };
+
+        // 일의 자리 곱의 두 자리 분리 (필요시 패딩)
+        const tensStr = String(q.tensDigit);
+        const onesStr = String(q.onesDigit);
+
+        const card = document.createElement("div");
+        card.className = "fluffy-card p-5 relative flex flex-col items-center justify-between";
+        card.id = `card-${q.id}`;
+
+        card.innerHTML = `
+          <!-- 문제 번호 배지 -->
+          <div class="w-full flex items-center justify-between mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FFF0F4] border border-[#FFCAD5] text-[#FF6E89] font-bold text-sm shadow-inner">
+              ${q.index}
+            </span>
+            <span class="text-xs text-[#A898BC] handwriting">(${q.num1} × ${q.num2})</span>
+          </div>
+
+          <!-- 세로셈 본체 -->
+          <div class="flex flex-col items-end pr-3 select-none text-2xl font-bold tracking-widest text-[#635178] my-1">
+            <!-- 윗수 (두 자릿수) -->
+            <div class="flex gap-2.5">
+              <span class="w-7 text-center">${tensStr}</span>
+              <span class="w-7 text-center">${onesStr}</span>
+            </div>
+            <!-- 아랫수 (X 한 자릿수) -->
+            <div class="flex items-center gap-2.5 mt-0.5">
+              <span class="text-xl text-[#FF8DA3] font-black mr-1">×</span>
+              <span class="w-7 text-center text-transparent">0</span>
+              <span class="w-7 text-center">${q.num2}</span>
+            </div>
+            <!-- 가로 구분선 1 -->
+            <div class="w-32 h-[2.5px] bg-[#8B7C9D] rounded-full my-2"></div>
+
+            <!-- 1단계: 일의 자리 곱한 값 입력칸 (예: 9 x 3 = 27) -->
+            <div class="flex gap-1.5 items-center mb-1.5">
+              <input type="text" maxlength="2" inputmode="numeric" 
+                id="input-ones-${q.id}" 
+                value="${probState.ones}"
+                placeholder="□□"
+                oninput="onInputChange('${q.id}', 'ones', this.value)"
+                class="digit-box w-20 text-center tracking-widest font-bold"
+                title="${onesStr} × ${q.num2} 의 값">
+            </div>
+
+            <!-- 2단계: 십의 자리 곱한 값 입력칸 (예: 10 x 3 = 30) -->
+            <div class="flex gap-1.5 items-center mb-1">
+              <input type="text" maxlength="3" inputmode="numeric" 
+                id="input-tens-${q.id}" 
+                value="${probState.tens}"
+                placeholder="□□"
+                oninput="onInputChange('${q.id}', 'tens', this.value)"
+                class="digit-box w-20 text-center tracking-widest font-bold"
+                title="${tensStr}0 × ${q.num2} 의 값">
+            </div>
+
+            <!-- 가로 구분선 2 -->
+            <div class="w-32 h-[2.5px] bg-[#8B7C9D] rounded-full my-2"></div>
+
+            <!-- 3단계: 최종 합 입력칸 (예: 27 + 30 = 57) -->
+            <div class="flex gap-1.5 items-center">
+              <input type="text" maxlength="3" inputmode="numeric" 
+                id="input-total-${q.id}" 
+                value="${probState.total}"
+                placeholder="□□□"
+                oninput="onInputChange('${q.id}', 'total', this.value)"
+                class="digit-box w-24 text-center tracking-wider font-bold text-lg bg-[#FFF2F5] border-[#FFAEBF]"
+                title="두 수의 합">
+            </div>
+          </div>
+
+          <!-- 개별 피드백 안내 -->
+          <div id="feedback-${q.id}" class="mt-2 text-xs font-bold text-center h-4 text-gray-400">
+            <!-- 채점 시 멘트 삽입 -->
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      updateScoreDisplay();
+    }
+
+    // 입력 이벤트 처리
+    function onInputChange(id, field, val) {
+      if (!userInputs[id]) {
+        userInputs[id] = { ones: '', tens: '', total: '' };
+      }
+      userInputs[id][field] = val.trim();
+    }
+
+    // 페이지 전환
+    function switchPage(page) {
+      playBeep('pop');
+      renderPage(page);
+    }
+
+    // 현재 페이지 채점
+    function checkAnswers() {
+      const questions = pagesData[currentPage];
+      let correctCount = 0;
+
+      questions.forEach(q => {
+        const card = document.getElementById(`card-${q.id}`);
+        const inputOnes = document.getElementById(`input-ones-${q.id}`);
+        const inputTens = document.getElementById(`input-tens-${q.id}`);
+        const inputTotal = document.getElementById(`input-total-${q.id}`);
+        const feedback = document.getElementById(`feedback-${q.id}`);
+
+        const userOnes = Number(inputOnes.value);
+        const userTens = Number(inputTens.value);
+        const userTotal = Number(inputTotal.value);
+
+        const isCorrectOnes = userOnes === q.onesProduct;
+        const isCorrectTens = userTens === q.tensProduct;
+        const isCorrectTotal = userTotal === q.total;
+
+        // 시각 피드백 클래스 적용
+        applyInputStyle(inputOnes, isCorrectOnes);
+        applyInputStyle(inputTens, isCorrectTens);
+        applyInputStyle(inputTotal, isCorrectTotal);
+
+        if (isCorrectOnes && isCorrectTens && isCorrectTotal) {
+          correctCount++;
+          feedback.innerHTML = `<span class="text-green-500 font-bold">✨ 백점! 완벽해요 🐰</span>`;
+        } else {
+          feedback.innerHTML = `<span class="text-rose-400 font-bold">다시 한 번 살펴봐요! 🐾</span>`;
+        }
+      });
+
+      const score = Math.round((correctCount / 9) * 90);
+      const scoreDisplay = document.getElementById("pageScoreDisplay");
+      scoreDisplay.textContent = `${score} / 90점`;
+
+      if (correctCount === 9) {
+        playBeep('success');
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#FFB5C2', '#B5D8F7', '#FFEAA7', '#C4B5FD']
+        });
+      } else {
+        playBeep('hint');
+      }
+    }
+
+    function applyInputStyle(el, isOk) {
+      if (el.value.trim() === '') {
+        el.classList.remove('correct', 'wrong');
+        return;
+      }
+      if (isOk) {
+        el.classList.add('correct');
+        el.classList.remove('wrong');
+      } else {
+        el.classList.add('wrong');
+        el.classList.remove('correct');
+      }
+    }
+
+    // 점수 표시 업데이트
+    function updateScoreDisplay() {
+      document.getElementById("pageScoreDisplay").textContent = "- / 90점";
+    }
+
+    // 현재 페이지 리셋
+    function resetCurrentPage() {
+      playBeep('pop');
+      const questions = pagesData[currentPage];
+      questions.forEach(q => {
+        delete userInputs[q.id];
+        const inputOnes = document.getElementById(`input-ones-${q.id}`);
+        const inputTens = document.getElementById(`input-tens-${q.id}`);
+        const inputTotal = document.getElementById(`input-total-${q.id}`);
+        const feedback = document.getElementById(`feedback-${q.id}`);
+
+        if (inputOnes) {
+          inputOnes.value = '';
+          inputOnes.classList.remove('correct', 'wrong');
+        }
+        if (inputTens) {
+          inputTens.value = '';
+          inputTens.classList.remove('correct', 'wrong');
+        }
+        if (inputTotal) {
+          inputTotal.value = '';
+          inputTotal.classList.remove('correct', 'wrong');
+        }
+        if (feedback) {
+          feedback.innerHTML = '';
+        }
+      });
+      updateScoreDisplay();
+    }
+
+    // 인쇄 실행
+    function printCurrentPage() {
+      window.print();
+    }
+
+    // 답지 모달 열기/닫기
+    function toggleAnswerModal(show) {
+      const modal = document.getElementById("answerModal");
+      if (show) {
+        modal.classList.remove("hidden");
+        renderAnswerTab(currentPage);
+      } else {
+        modal.classList.add("hidden");
+      }
+    }
+
+    // 답지 탭 렌더링
+    function renderAnswerTab(pageNum) {
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`ans-tab-${i}`);
+        if (i === pageNum) {
+          btn.className = "px-4 py-1.5 rounded-xl text-sm font-bold bg-[#FFB5C2] text-white shadow-sm";
+        } else {
+          btn.className = "px-4 py-1.5 rounded-xl text-sm font-bold bg-gray-100 text-[#7B6B8D] hover:bg-gray-200";
+        }
+      }
+
+      const container = document.getElementById("answerContentArea");
+      container.innerHTML = "";
+      const questions = pagesData[pageNum];
+
+      questions.forEach(q => {
+        const item = document.createElement("div");
+        item.className = "bg-[#FFF8FA] p-3 rounded-2xl border border-[#FFD9E3] text-sm";
+        item.innerHTML = `
+          <div class="flex items-center justify-between font-bold text-[#FF6E89] mb-1">
+            <span>[${q.index}번]</span>
+            <span class="text-xs bg-white px-2 py-0.5 rounded-full border border-pink-200">${q.num1} × ${q.num2}</span>
+          </div>
+          <div class="space-y-1 text-xs text-[#6B5A7F] font-mono pl-1">
+            <div>• 일의 자리 : ${q.onesDigit} × ${q.num2} = <strong class="text-pink-600">${q.onesProduct}</strong></div>
+            <div>• 십의 자리 : ${q.tensDigit}0 × ${q.num2} = <strong class="text-blue-600">${q.tensProduct}</strong></div>
+            <div class="pt-1 border-t border-pink-200 font-bold text-[#4B3B60]">
+              ➜ 계산 결과 : ${q.onesProduct} + ${q.tensProduct} = <span class="text-base text-rose-500 font-bold">${q.total}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // 답지 전체 인쇄 함수
+    function printAnswers() {
+      const printBox = document.getElementById("printAnswerContainer");
+      printBox.innerHTML = `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h1 style="text-align: center; color: #7B6B8D; margin-bottom: 20px;">두 자릿수 × 한 자릿수 세로셈 정답 및 해설집</h1>
+          ${[1,2,3,4,5].map(p => `
+            <div style="margin-bottom: 30px; page-break-after: always;">
+              <h2 style="color: #FF8DA3; border-bottom: 2px solid #FFCCD5; padding-bottom: 5px;">★ ${p}쪽 정답표</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+                <thead>
+                  <tr style="background: #FFF0F4;">
+                    <th style="border: 1px solid #FFD1DC; padding: 6px;">번호</th>
+                    <th style="border: 1px solid #FFD1DC; padding: 6px;">문제</th>
+                    <th style="border: 1px solid #FFD1DC; padding: 6px;">일의 자리 곱</th>
+                    <th style="border: 1px solid #FFD1DC; padding: 6px;">십의 자리 곱</th>
+                    <th style="border: 1px solid #FFD1DC; padding: 6px;">최종 정답</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${pagesData[p].map(q => `
+                    <tr style="text-align: center;">
+                      <td style="border: 1px solid #E2E8F0; padding: 6px;">${q.index}</td>
+                      <td style="border: 1px solid #E2E8F0; padding: 6px; font-weight: bold;">${q.num1} × ${q.num2}</td>
+                      <td style="border: 1px solid #E2E8F0; padding: 6px;">${q.onesDigit} × ${q.num2} = ${q.onesProduct}</td>
+                      <td style="border: 1px solid #E2E8F0; padding: 6px;">${q.tensDigit}0 × ${q.num2} = ${q.tensProduct}</td>
+                      <td style="border: 1px solid #E2E8F0; padding: 6px; font-weight: bold; color: #E53E3E;">${q.total}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      const origContent = document.body.innerHTML;
+      document.body.innerHTML = printBox.innerHTML;
+      window.print();
+      document.body.innerHTML = origContent;
+      window.location.reload();
+    }
+
+    // 초기화 실행
+    window.addEventListener("DOMContentLoaded", () => {
+      // 오늘 날짜 자동 기입
+      const now = new Date();
+      document.getElementById("studentDate").value = `${now.getMonth() + 1}월 ${now.getDate()}일`;
+      renderPage(1);
+    });
+  </script>
+</body>
+</html>
